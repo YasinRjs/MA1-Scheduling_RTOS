@@ -99,8 +99,8 @@ def simulate(task_list, start, end, withPrint):
         j = 0
         while j < len(task_list) and keepGoing:
             if (timer > 0) :
-                newTaskArrivalCalcul = (timer - (jobs_list[j] * period_list[j])) == offset_list[j]
-                taskDeadlineCalcul = deadline_job[j] * deadline_list[j] + offset_list[j] == timer
+                newTaskArrivalCalcul = jobs_list[j] * period_list[j] + offset_list[j] == timer
+                taskDeadlineCalcul = (deadline_job[j]-1) * period_list[j] + deadline_list[j] + offset_list[j] == timer
 
             if (offset_list[j] < timer and taskDeadlineCalcul):
                 if (toDo_list[j] >= wcet_list[j]):
@@ -110,7 +110,7 @@ def simulate(task_list, start, end, withPrint):
                 else:
                     if (withPrint and keepGoing):
                         print(timer,": Deadline of job T"+str(nums_list[j])+"J"+str(deadline_job[j]))
-                deadline_job[j] += 1
+                    deadline_job[j] += 1
             # ARRIVAL OR DEADLINE MISS
             if (keepGoing and offset_list[j] <= timer and newTaskArrivalCalcul):
                 if (toDo_list[j] != 0):
@@ -139,8 +139,8 @@ def simulate(task_list, start, end, withPrint):
                     timer += 1
                     k = 0
                     while canContinueExecuting and k<len(task_list):
-                        newTaskArrivalCalcul = (timer - (jobs_list[k] * period_list[k])) == offset_list[k]
-                        taskDeadlineCalcul = deadline_job[k] * deadline_list[k] + offset_list[k] == timer
+                        newTaskArrivalCalcul = offset_list[k] + jobs_list[k] * period_list[k] == timer
+                        taskDeadlineCalcul = jobs_list[k] * period_list[k]+deadline_list[k] + offset_list[k] == timer
                         if (offset_list[k] <= timer and newTaskArrivalCalcul) or \
                             (offset_list[k] < timer and taskDeadlineCalcul):
                             canContinueExecuting = False
@@ -148,6 +148,8 @@ def simulate(task_list, start, end, withPrint):
                 if (withPrint):
                     if (timer <= end):
                         print(str(lastExecTime)+"-"+str(timer)+": T"+str(nums_list[highPriority])+"J"+str(jobs_list[highPriority]))
+                    elif (lastExecTime != end):
+                        print(str(lastExecTime)+"-"+str(end)+": T"+str(nums_list[highPriority])+"J"+str(jobs_list[highPriority]))
             else:
                 timer+=1
 
@@ -239,9 +241,9 @@ def initSimulation():
     #########################################
     canBeSimulated = simulate(task_list, start, end, True)
     if (canBeSimulated):
-        print("--> Scheduling is OK.")
+        print("\n--> Scheduling is OK.")
     else:
-        print("--> Can't be Scheduled.")
+        print("\n--> Can't be Scheduled.")
 
 def calculUtilization(task_list):
     res = 0
