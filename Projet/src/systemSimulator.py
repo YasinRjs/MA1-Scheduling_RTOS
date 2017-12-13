@@ -30,12 +30,16 @@ class SystemSimulator():
         self.toDo_list = [0 for i in range(self.totalTasks)]
         self.jobs_list = [0 for i in range(self.totalTasks)]
         self.deadline_job = [1 for i in range(self.totalTasks)]
+        self.listPlot = [0 for i in range(self.end)]
 
     def getNewTaskArrival(self, timer, taskIndex):
         if timer > 0:
             return (self.jobs_list[taskIndex] * self.period_list[taskIndex] + self.offset_list[taskIndex] == timer)
         else:
             return True
+
+    def getPlotList(self):
+        return self.listPlot
 
     def getTaskDeadline(self, timer, taskIndex):
         if timer > 0:
@@ -117,6 +121,8 @@ class SystemSimulator():
                 if (highPriority < self.totalTasks):
                     canContinueExecuting = True
                     while (self.taskHasWork(highPriority) and canContinueExecuting):
+                        if timer<self.end:
+                            self.listPlot[timer] = self.task_list[highPriority].getID()
                         self.toDo_list[highPriority] -= 1
                         timer += 1
                         taskIndex = 0

@@ -5,7 +5,9 @@ import task
 import parser
 import systemSimulator
 import systemGenerator
+import plotScheduler
 from copy import deepcopy
+import numpy as np
 
 def printTasks(task_list):
     print("#########################################################")
@@ -53,10 +55,19 @@ def findStudyInterval(task_list):
 def simulate(task_list, start, end, withPrint):
     ############################################
     # LISTS
-    taskManager = systemSimulator.SystemSimulator(task_list, start, end, withPrint)
+    systemSimul = systemSimulator.SystemSimulator(task_list, start, end, withPrint)
+    res = systemSimul.launch()
+    if (res):
+        print("\n--> Scheduling is OK.")
+    else:
+        print("\n--> Can't be Scheduled.")
     ############################################
+    plotList = systemSimul.getPlotList()
+    plotSched = plotScheduler.PlotScheduler(plotList, len(task_list))
 
-    return taskManager.launch()
+    plotSched.plot()
+
+    return res
 
 def fact(num):
     return math.factorial(num)
@@ -124,12 +135,7 @@ def initSimulation():
     print("\t->Tasks are ordered by decreasing priorities")
     print("Schedule from", start, "to", end, ";", len(task_list), "tasks.")
     #########################################
-
-    canBeSimulated = simulate(task_list, start, end, True)
-    if (canBeSimulated):
-        print("\n--> Scheduling is OK.")
-    else:
-        print("\n--> Can't be Scheduled.")
+    simulate(task_list, start, end, True)
 
 def generate():
     numberOfTasks = int(sys.argv[2])
