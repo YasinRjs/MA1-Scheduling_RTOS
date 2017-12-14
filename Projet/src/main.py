@@ -3,7 +3,7 @@ import sys
 import itertools
 import task
 import parser
-import systemSimulator
+import taskManager
 import systemGenerator
 import plotScheduler
 from copy import deepcopy
@@ -21,41 +21,22 @@ def checkArgs(args):
         print("ERROR : Missing arguments ..")
         sys.exit()
 
-def lcm(a, b):
-    res = a
-    while (res%b)!=0:
-        res += a
-    return res
-
-def lcmOfList(period_list):
-    res = 1
-    for num in period_list:
-        res = lcm(num, res)
-    return res
-
-def findP(task_list):
-    period_list = getPeriodList(task_list)
-    return lcmOfList(period_list)
-
-def findOmax(task_list):
-    offset_list = getOffsetList(task_list)
-    return max(offset_list)
-
 def findStudyInterval(task_list):
     """
         Using formula [O_max , O_max + 2 * P]
     """
+    taskManag = taskManager.TaskManager(task_list)
     # First find P
-    P = findP(task_list)
+    P = taskManag.findP()
     # Then find O_max
-    O_max = findOmax(task_list)
+    O_max = taskManag.findOmax()
 
     return [O_max, O_max + 2*P]
 
 def simulate(task_list, start, end, withPrint):
     ############################################
     # LISTS
-    systemSimul = systemSimulator.SystemSimulator(task_list, start, end, withPrint)
+    systemSimul = taskManager.TaskManager(task_list, start, end, withPrint)
     res = systemSimul.launch()
     if (res):
         print("\n--> Scheduling is OK.")
