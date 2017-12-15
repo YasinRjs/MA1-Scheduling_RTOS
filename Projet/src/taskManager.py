@@ -1,7 +1,7 @@
 
 class TaskManager():
 
-    def __init__(self, task_list, start=0, end=0, withPrint=False):
+    def __init__(self, task_list, start=0, end=0, withPrint=False, audsley=False, lowestPriorityTasks=[]):
         self.task_list = task_list
         self.totalTasks = len(task_list)
         self.withPrint = withPrint
@@ -16,6 +16,8 @@ class TaskManager():
         self.jobs_list = [0 for i in range(self.totalTasks)]
         self.deadline_job = [1 for i in range(self.totalTasks)]
         self.listPlot = [0 for i in range(self.end)]
+        self.audsley = audsley
+        self.lowestPriorityTasks = lowestPriorityTasks
 
     def getPeriodList(self):
         return [task.getPeriod() for task in self.task_list]
@@ -51,50 +53,44 @@ class TaskManager():
         return res
 
     def getNewTaskArrival(self, timer, taskIndex):
-        if timer > 0:
-            return (self.jobs_list[taskIndex] * self.period_list[taskIndex] + self.offset_list[taskIndex] == timer)
-        else:
-            return True
+        return (self.jobs_list[taskIndex] * self.period_list[taskIndex] + self.offset_list[taskIndex] == timer) and self.offset_list[taskIndex] <= timer
 
     def getPlotList(self):
         return self.listPlot
 
     def getTaskDeadline(self, timer, taskIndex):
-        if timer > 0:
-            return ((self.deadline_job[taskIndex]-1) * self.period_list[taskIndex] + self.deadline_list[taskIndex] + self.offset_list[taskIndex] == timer)
-        else:
-            return False
-
-    def deadlineOrMiss(self, timer, taskIndex, taskDeadlineCalcul):
-        return (self.offset_list[taskIndex] < timer and taskDeadlineCalcul)
+        return ((self.deadline_job[taskIndex]-1) * self.period_list[taskIndex] + self.deadline_list[taskIndex] + self.offset_list[taskIndex] == timer)
 
     def printDeadlineJob(self, timer, taskIndex):
-        if (self.withPrint):
+        if (self.withPrint and self.start <= timer):
             print(timer,": Deadline of job T"+str(self.nums_list[taskIndex])+"J"+str(self.deadline_job[taskIndex]))
 
     def printDeadlineMiss(self, timer, taskIndex):
-        if (self.withPrint):
-            print("timeInstant: Job T"+str(self.nums_list[taskIndex])+"J"+str(self.jobs_list[taskIndex])+" misses a deadline")
+        if (self.withPrint and self.start <= timer):
+            print(timer,": Job T"+str(self.nums_list[taskIndex])+"J"+str(self.jobs_list[taskIndex]-1)+" misses a deadline")
 
     def printNewArrival(self, timer, taskIndex):
-        if (self.withPrint):
-            print(timer,": Arrival of job T"+str(self.nums_list[taskIndex])+"J"+str(self.jobs_list[taskIndex]))
+        if (self.withPrint and self.start <= timer):
+            print(timer,": Arrival of job T"+str(self.nums_list[taskIndex])+"J"+str(self.jobs_list[taskIndex]+1))
 
     def printExecution(self, lastExecTime, timer, taskIndex):
-        if (self.withPrint):
+        if (self.withPrint and self.start <= timer):
             if (timer <= self.end):
                 print(str(lastExecTime)+"-"+str(timer)+": T"+str(self.nums_list[taskIndex])+"J"+str(self.jobs_list[taskIndex]))
             elif (lastExecTime != self.end):
                 print(str(lastExecTime)+"-"+str(self.end)+": T"+str(self.nums_list[taskIndex])+"J"+str(self.jobs_list[taskIndex]))
 
-    def arrivalOrMiss(self, timer, taskIndex, newTaskArrivalCalcul, noDeadlineMiss):
-        return (noDeadlineMiss and self.offset_list[taskIndex] <= timer and newTaskArrivalCalcul)
+    def arrivalOrMiss(self, newTaskArrivalCalcul, noDeadlineMiss):
+        return (noDeadlineMiss and newTaskArrivalCalcul)
 
     def taskHasWork(self, taskIndex):
         return self.toDo_list[taskIndex] != 0
 
     def addNewJob(self, taskIndex):
         self.toDo_list[taskIndex] = self.wcet_list[taskIndex]
+
+    def checkLowestPriorities(self, taskIndex):
+        return self.task_list[taskIndex].getID() not in self.lowestPriorityTasks
 
     def launch(self):
         timer = 0
@@ -103,23 +99,28 @@ class TaskManager():
             taskIndex = 0
             while (taskIndex < self.totalTasks and noDeadlineMiss):
                 newTaskArrivalCalcul = self.getNewTaskArrival(timer, taskIndex)
-                taskDeadlineCalcul = self.getTaskDeadline(timer, taskIndex)
+                deadlineOrMiss = self.getTaskDeadline(timer, taskIndex)
 
                 # Is there a Miss or a new deadline ?
-                if (self.deadlineOrMiss(timer, taskIndex, taskDeadlineCalcul)):
+                if (deadlineOrMiss):
                     # Is it a miss ?
                     if (self.toDo_list[taskIndex] >= self.wcet_list[taskIndex]):
                         self.printDeadlineMiss(timer, taskIndex)
-                        noDeadlineMiss = False
+                        if (not self.audsley):
+                            noDeadlineMiss = False
+                        else:
+                            if (self.checkLowestPriorities(taskIndex)):
+                                noDeadlineMiss = False
                     # It's a new deadline to print
                     else:
                         self.printDeadlineJob(timer, taskIndex)
                         self.deadline_job[taskIndex] += 1
                 # Is there new Arrival or deadline Miss with the arrival
-                if (self.arrivalOrMiss(timer, taskIndex, newTaskArrivalCalcul, noDeadlineMiss)):
+                if (self.arrivalOrMiss(newTaskArrivalCalcul, noDeadlineMiss)):
                     if (self.taskHasWork(taskIndex)):
-                        printDeadlineMiss(timer, taskIndex)
-                        noDeadlineMiss = False
+                        self.printDeadlineMiss(timer, taskIndex)
+                        if (self.checkLowestPriorities(taskIndex)):
+                            noDeadlineMiss = False
                     else:
                         # TODO check this
                         if (timer != self.end):
