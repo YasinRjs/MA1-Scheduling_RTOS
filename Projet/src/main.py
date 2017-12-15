@@ -97,23 +97,25 @@ def isLowestPriorityViable(task_list, start, end, taskIndex, rounds, lowestPrior
 
     return found
 
+def printTaskIds(task_list):
+    for task in task_list:
+        print("Task",str(task.getID()), end=" ,")
+    print()
+
 def checkAudsley(task_list, start, end, taskIndex, latest, lowestPriorityTasks = []):
-    if (latest == -1):
-        print(getIdList(task_list))
-    if (latest != -1):
-        numberOfTab = (len(task_list)-1-latest)
-        if (isLowestPriorityViable(task_list, start, end, taskIndex, latest, lowestPriorityTasks)):
-            newLowestPriorityTasks = deepcopy(lowestPriorityTasks)
-            newLowestPriorityTasks.append(task_list[taskIndex].getID())
-            print(numberOfTab*"\t" + "Task " + str(task_list[taskIndex].getID())+" is lowest priority viable")
-            task_list_new = deepcopy(task_list)
-            tmp = task_list_new[taskIndex]
-            task_list_new[taskIndex] = task_list_new[latest]
-            task_list_new[latest] = tmp
-            for j in range(latest):
-                checkAudsley(task_list_new, start, end, j, latest-1, lowestPriorityTasks)
-        else:
-            print(numberOfTab*"\t"+"Task "+str(task_list[taskIndex].getID())+" is not lowest priority viable")
+    numberOfTab = (len(task_list)-1-latest)
+    if (isLowestPriorityViable(task_list, start, end, taskIndex, latest, lowestPriorityTasks)):
+        newLowestPriorityTasks = deepcopy(lowestPriorityTasks)
+        newLowestPriorityTasks.append(task_list[taskIndex].getID())
+        print(numberOfTab*"\t" + "Task " + str(task_list[taskIndex].getID())+" is lowest priority viable")
+        task_list_new = deepcopy(task_list)
+        tmp = task_list_new[taskIndex]
+        task_list_new[taskIndex] = task_list_new[latest]
+        task_list_new[latest] = tmp
+        for j in range(latest):
+            checkAudsley(task_list_new, start, end, j, latest-1, lowestPriorityTasks)
+    else:
+        print(numberOfTab*"\t"+"Task "+str(task_list[taskIndex].getID())+" is not lowest priority viable")
 
 def audsley():
     start = int(sys.argv[2])
