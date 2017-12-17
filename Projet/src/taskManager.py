@@ -1,7 +1,7 @@
 
 class TaskManager():
 
-    def __init__(self, task_list, start=0, end=0, withPrint=False, audsley=False, lowestPriorityTasks=[]):
+    def __init__(self, task_list, start=0, end=0, withPrint=False, audsley=False, lowestPriorityTask=-1):
         self.task_list = task_list
         self.totalTasks = len(task_list)
         self.withPrint = withPrint
@@ -17,7 +17,7 @@ class TaskManager():
         self.deadline_job = [1 for i in range(self.totalTasks)]
         self.listPlot = [0 for i in range(self.end)]
         self.audsley = audsley
-        self.lowestPriorityTasks = lowestPriorityTasks
+        self.lowestPriorityTask = lowestPriorityTask
 
     def getPeriodList(self):
         return [task.getPeriod() for task in self.task_list]
@@ -90,7 +90,7 @@ class TaskManager():
         self.toDo_list[taskIndex] = self.wcet_list[taskIndex]
 
     def checkLowestPriorities(self, taskIndex):
-        return self.task_list[taskIndex].getID() not in self.lowestPriorityTasks
+        return self.task_list[taskIndex].getID() == self.lowestPriorityTask
 
     def launch(self):
         timer = 0
