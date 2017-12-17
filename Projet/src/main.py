@@ -9,8 +9,6 @@ import plotScheduler
 from copy import deepcopy
 import numpy as np
 
-NUMBEROFTASKS = 2
-
 def printTasks(task_list):
     print("#########################################################")
     for i in range(len(task_list)):
